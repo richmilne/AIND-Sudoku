@@ -20,7 +20,7 @@ def init(side, wildcard='.', diagonal=False):
     length = dim * dim
 
     rows = string.ascii_uppercase
-    cols = '1234567890' + string.lowercase
+    cols = '1234567890' + string.ascii_lowercase
     rows, cols = [seq[:dim] for seq in [rows, cols]]
     symbols = cols
 
@@ -28,7 +28,7 @@ def init(side, wildcard='.', diagonal=False):
         assert c not in symbols
 
     sub_slices = []
-    for i in xrange(side):
+    for i in range(side):
         base = i*side
         sub_slices.append(slice(base, base + side))
 
@@ -46,7 +46,7 @@ def init(side, wildcard='.', diagonal=False):
 
     if diagonal:
         desc_diag = [''.join(d) for d in zip(rows, cols)]
-        reversed = [rows[i] for i in xrange(len(rows)-1,-1,-1)]
+        reversed = [rows[i] for i in range(len(rows)-1,-1,-1)]
         asc_diag = [''.join(d) for d in zip(reversed, cols)]
         diagonals = [desc_diag, asc_diag]
         unitlist = unitlist + diagonals
@@ -72,9 +72,9 @@ def init(side, wildcard='.', diagonal=False):
             val_list.insert(2, ('diagonals', diagonals))
         for (name, seq) in val_list:
             print
-            print name
+            print(name)
             for line in seq:
-                print line
+                print(line)
 
     def values_grid(values):
         """
@@ -106,7 +106,7 @@ def init(side, wildcard='.', diagonal=False):
         for r, row in enumerate(padded):
             disp = [col.center(width) + ('|' if add_sep(c) else '')
                     for c, col in enumerate(row)]
-            print ''.join(disp)
+            print(''.join(disp))
             if add_sep(r):
                 print(separator)
         print
@@ -184,6 +184,57 @@ def init(side, wildcard='.', diagonal=False):
         for digit, box in set(singles):
             values[box] = digit
         return values
+
+    def naked_siblings(values, num_siblings=None):
+        """Generalisation of the naked twins strategy.
+
+        If a unit contains n identical cells, with each containing n options,
+        those options can't occur anywhere else in that unit.
+
+        To help understand, here's a naked twins example: If two cells each
+        contain the two options 2 and 3 - one of those cells must contain the
+        2, and the other the 3; no other cell in that unit can. Therefore we
+        can eliminate those values from the other cells!"""
+        if num_siblings is not None:
+            assert 2 <= num_siblings <= (dim-1)
+
+        for unit in unitlist:
+            unit_values = [(box, tuple(sorted(values[box]))) for box in unit]
+            unit_values = sorted(unit_values, key = lambda v: len(v[1]))
+
+            siblings = {}
+            for box, digits in unit_values:
+                num_digits = len(digits)
+                if num_siblings is not None:
+                    if num_digits  > num_siblings: break
+                    if num_digits != num_siblings: continue
+                if digits not in siblings:
+                    siblings[digits] = set([])
+                siblings[digits].add(box)
+
+            for digits, boxes in siblings.items():
+                if len(digits) > 1 and len(digits) == len(boxes):
+                    # We've found our n identical cells!
+                    digits = set(digits)
+                    for box, old_value in unit_values:
+                        if box in boxes: continue
+                        value = ''.join(sorted(set(old_value) - digits))
+                        values[box] = ''.join(sorted(value))
+
+        return values
+
+    def naked_twins(values):
+        """Eliminate values using the naked twins strategy.
+        Args:
+            values(dict): a dictionary of the form {'box_name': '123456789', ...}
+
+        Returns:
+            the values dictionary with the naked twins eliminated from peers.
+        """
+    
+        # Find all instances of naked twins
+        # Eliminate the naked twins as possibilities for their peers
+        return naked_siblings(values, 2)
 
     def reduce(values):
         """One round of each of the reduction functions."""
@@ -271,6 +322,8 @@ def init(side, wildcard='.', diagonal=False):
     return functions
 
 
-functions = init(3)
+functions = init(3, diagonal=True)
 globals().update(functions)
-__all__ = functions.keys()
+__all__ = list(functions.keys())
+
+

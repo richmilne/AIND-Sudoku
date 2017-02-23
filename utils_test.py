@@ -324,5 +324,6 @@ class TestNakedSiblings(unittest.TestCase, AttachUtils):
         values = self.naked_twins(input)
         self.assertEqual(values, check)
 
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
