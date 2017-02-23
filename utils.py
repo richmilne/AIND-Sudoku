@@ -144,10 +144,25 @@ def init(side, wildcard='.', diagonal=False):
         return dict(zip(boxes, puzzle))
     grid_values.__doc__ %= locals()
 
+    def eliminate(values):
+        """
+        Go through all the boxes, and whenever there is a box with a value,
+        eliminate this value from the values of all its peers.
+        Input: A sudoku in dictionary form.
+        Output: The resulting sudoku in dictionary form.
+        """
+        solved = [(s, vals) for s, vals in values.items() if len(vals) == 1]
+        for box, digit in solved:
+            for peer in peers[box]:
+                values[peer] = values[peer].replace(digit, '')
+        return values
+
     return {'display': display,
             'values_grid': values_grid,
             'parse_grid': parse_grid,
-            'grid_values': grid_values}
+            'grid_values': grid_values,
+            'eliminate': eliminate,
+    }
 
 functions = init(3)
 globals().update(functions)
