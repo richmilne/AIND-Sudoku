@@ -324,6 +324,52 @@ class TestNakedSiblings(unittest.TestCase, AttachUtils):
         values = self.naked_twins(input)
         self.assertEqual(values, check)
 
+class TestHexaSudoku(unittest.TestCase, AttachUtils):
+    def test_hexa(self):
+        self.utils_init(4, wildcard='_')
+        puz_hexa = r"""4 _ E _   _ _ 3 1   F _ _ 6   _ A _ 7
+                       3 _ _ B   _ F _ 8   1 _ _ _   _ _ 5 _
+                       _ 1 _ _   B _ _ _   _ D _ _   _ _ 0 _
+                       D _ 9 _   E _ _ _   _ _ 2 _   _ _ _ 4
+                                                          
+                       _ _ _ 0   6 4 _ _   B _ _ 1   3 C _ _
+                       _ _ F _   _ _ _ _   _ _ _ E   _ 1 _ 9
+                       8 3 _ _   0 _ _ _   _ _ F _   _ 5 6 _
+                       _ 7 5 9   _ 1 _ C   _ _ 4 8   _ B _ 2
+                                         
+                       _ _ _ _   9 _ _ _   _ _ C _   7 _ 8 _
+                       C _ _ _   _ 2 _ _   E _ 6 _   A F _ _
+                       5 _ 2 _   _ 6 8 _   9 _ A _   C _ _ _
+                       _ B _ _   4 0 _ _   8 _ _ _   _ 6 _ E
+                                         
+                       _ _ _ C   _ 5 _ _   _ _ _ A   _ 0 _ 3
+                       _ _ 1 _   7 8 6 _   _ _ _ _   2 _ _ D
+                       F E _ _   1 _ A _   _ 6 D B   _ _ _ 5
+                       2 _ _ _   _ 3 9 _   _ _ _ _   6 _ B _"""
+
+        solution = r"""4 8 e 2 |5 d 3 1 |f 0 b 6 |9 a c 7
+                       3 a 0 b |c f 7 8 |1 4 e 9 |d 2 5 6
+                       7 1 c 6 |b 9 2 4 |a d 3 5 |e 8 0 f
+                       d 5 9 f |e a 0 6 |c 8 2 7 |b 3 1 4
+                       --------+--------+--------+--------
+                       e 2 d 0 |6 4 f 9 |b a 5 1 |3 c 7 8
+                       a c f 4 |8 b 5 3 |6 2 7 e |0 1 d 9
+                       8 3 b 1 |0 7 e 2 |d 9 f c |4 5 6 a
+                       6 7 5 9 |a 1 d c |0 3 4 8 |f b e 2
+                       --------+--------+--------+--------
+                       1 6 a 3 |9 e b f |4 5 c 2 |7 d 8 0
+                       c 0 4 8 |3 2 1 5 |e 7 6 d |a f 9 b
+                       5 f 2 e |d 6 8 7 |9 b a 0 |c 4 3 1
+                       9 b 7 d |4 0 c a |8 f 1 3 |5 6 2 e
+                       --------+--------+--------+--------
+                       b 9 6 c |2 5 4 d |7 e 8 a |1 0 f 3
+                       0 4 1 5 |7 8 6 b |3 c 9 f |2 e a d
+                       f e 3 7 |1 c a 0 |2 6 d b |8 9 4 5
+                       2 d 8 a |f 3 9 e |5 1 0 4 |6 7 b c"""
+
+        input = self.grid_values(puz_hexa.lower())
+        values = self.search(input)
+        self.assertEqual(values, self.grid_values(solution))
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

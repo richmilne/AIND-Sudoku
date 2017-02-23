@@ -3,11 +3,13 @@
 
 # Question 1 (Naked Twins)
 Q: How do we use constraint propagation to solve the naked twins problem?  
-A: *Student should provide answer here*
+A: I think the question is the wrong way around! We look for naked twins to reduce the total number of possible options for the remaining values in the same unit. By reducing the number of options, we **constrain** the set of potential Sudoku grids (which we have to enumerate and evaluate) to be only those where the naked twins' digits have been removed.
+
+This may help us immediately, in that using the naked twins strategy immediately results in a solution to the puzzle. If not, it helps us solve the problem quicker, as there are fewer grids we have to evaluate. Each of these grids would still be subject to the same naked twins constraint, and each of them will be constrained further when other reductive functions eliminate more potential values.
 
 # Question 2 (Diagonal Sudoku)
 Q: How do we use constraint propagation to solve the diagonal sudoku problem?  
-A: *Student should provide answer here*
+A: The diagonal constraint states that each digit can appear only once in the diagonals of a Sudoku puzzle. Similarly to what was discussed above, by reducing the potential digits that can appear in a diagonal, we reduce the number of grids that have to be enumerated and evaluated. Fewer grids allow us to search through the solution space quicker and therefore solve a puzzle (or determine it's insoluble) faster.
 
 ### Install
 
