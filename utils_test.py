@@ -32,7 +32,7 @@ class TestGridParsing(unittest.TestCase, AttachUtils):
         3 4 . 432
         . 3 ...
          1 . ."""
-        puzzle = '1 2 3 4 3 4 . 432 . 3 . . . 1 . .'.split()
+        puzzle = '1 2 3 4 3 4 . 234 . 3 . . . 1 . .'.split()
 
         check = self.parse_grid(input)
         self.assertEqual(puzzle, check)
@@ -45,7 +45,7 @@ class TestGridParsing(unittest.TestCase, AttachUtils):
         3 4 _ 432
         _ 3 ___
          1 _ _"""
-        check = ['1 2 3 4', '3 4 1234 432',
+        check = ['1 2 3 4', '3 4 1234 234',
                  '1234 3 1234 1234', '1234 1 1234 1234']
         check = [c.split() for c in check]
 
@@ -217,8 +217,8 @@ class TestReduce(unittest.TestCase, AttachUtils):
         check = ['234 1234 234 1234',
                  '234 1234 234 1234',
                  '234  234 234  234',
-                 '  .  234   .  234',]
-        check = [[c.strip('.') for c in row.split()] for row in check]
+                 '  #  234   #  234',]
+        check = [[c.strip('#') for c in row.split()] for row in check]
 
         values = self.reduce(self.grid_values(input))
         _, _, output = self.values_grid(values)
@@ -229,37 +229,100 @@ class TestReduce(unittest.TestCase, AttachUtils):
 
 
 class TestSearch(unittest.TestCase, AttachUtils):
+
+    # Test is identical to the diagonal test in solution_test; here it's just
+    # formatted to be more readable and understandable!
+    input = r"""2 . . |. . . |. . .
+                . . . |. . 6 |2 . .
+                . . 1 |. . . |. 7 .
+                ------+------+------
+                . . 6 |. . 8 |. . .
+                3 . . |. 9 . |. . 7
+                . . . |6 . . |4 . .
+                ------+------+------
+                . 4 . |. . . |8 . .
+                . . 5 |2 . . |. . .
+                . . . |. . . |. . 3"""
+
     def test_search(self):
         self.utils_init(3, diagonal=False)
 
-        # Example taken from course notes.
-        input = self.grid_values(r""" 4 . . |. . . |8 . 5
-                                      . 3 . |. . . |. . .
-                                      . . . |7 . . |. . .
-                                      ------+------+------
-                                      . 2 . |. . . |. 6 .
-                                      . . . |. 8 . |4 . .
-                                      . 4 . |. 1 . |. . .
-                                      ------+------+------
-                                      . . . |6 . 3 |. 7 .
-                                      5 . 3 |2 . 1 |. . .
-                                      1 . 4 |. . . |. . .""")
+        # Example taken from course notes/coding example.
+        input = self.grid_values(self.input)
 
-        answer = self.grid_values(r"""4 1 7 |3 6 9 |8 2 5
-                                      6 3 2 |1 5 8 |9 4 7
-                                      9 5 8 |7 2 4 |3 1 6
+        answer = self.grid_values(r"""2 3 9 |8 7 4 |1 5 6
+                                      7 5 4 |3 1 6 |2 9 8
+                                      6 8 1 |9 5 2 |3 7 4
                                       ------+------+------
-                                      8 2 5 |4 3 7 |1 6 9
-                                      7 9 1 |5 8 6 |4 3 2
-                                      3 4 6 |9 1 2 |7 5 8
+                                      4 7 6 |1 2 8 |5 3 9
+                                      3 1 2 |4 9 5 |6 8 7
+                                      5 9 8 |6 3 7 |4 1 2
                                       ------+------+------
-                                      2 8 9 |6 4 3 |5 7 1
-                                      5 7 3 |2 9 1 |6 8 4
-                                      1 6 4 |8 7 5 |2 9 3""")
+                                      1 4 3 |7 6 9 |8 2 5
+                                      9 6 5 |2 8 3 |7 4 1
+                                      8 2 7 |5 4 1 |9 6 3""")
 
         values = self.search(input)
         self.assertEqual(answer, values)
 
+    def test_search_diagonal(self):
+        self.utils_init(3, diagonal=True)
+
+        input = self.grid_values(self.input)
+
+        answer = self.grid_values(r"""2 6 7 |9 4 5 |3 8 1
+                                      8 5 3 |7 1 6 |2 4 9
+                                      4 9 1 |8 2 3 |5 7 6
+                                      ------+------+------
+                                      5 7 6 |4 3 8 |1 9 2
+                                      3 8 4 |1 9 2 |6 5 7
+                                      1 2 9 |6 5 7 |4 3 8
+                                      ------+------+------
+                                      6 4 2 |3 7 9 |8 1 5
+                                      9 3 5 |2 8 1 |7 6 4
+                                      7 1 8 |5 6 4 |9 2 3""")
+        values = self.search(input)
+        self.assertEqual(answer, values)
+
+
+class TestNakedSiblings(unittest.TestCase, AttachUtils):
+
+    input = r"""134 34 |123 .
+                143  . |132 .
+                -------+------
+                  .  . |231 .
+                431 43 |  . ."""
+
+    def test_naked_siblings(self):
+        self.utils_init(2)
+
+        check = r"""134 34 |123 1234
+                    134 12 |123 1234
+                    -------+---------
+                      2 12 |123 1234
+                    134 34 |  4 1234"""
+
+        input = self.grid_values(self.input)
+        values = self.naked_siblings(input)
+        self.assertEqual(values, self.grid_values(check))
+
+    def test_naked_twins(self):
+        self.utils_init(2)
+
+        check = r"""134 34 | 123 1234
+                    134 12 | 123 1234
+                   --------+----------
+                   1234 12 | 123 1234
+                    134 34 |1234 1234"""
+        check = self.grid_values(check)
+
+        input = self.grid_values(self.input)
+        values = self.naked_siblings(input, 2)
+        self.assertEqual(values, check)
+
+        input = self.grid_values(self.input)
+        values = self.naked_twins(input)
+        self.assertEqual(values, check)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

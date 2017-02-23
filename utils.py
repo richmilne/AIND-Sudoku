@@ -60,6 +60,8 @@ def init(side, wildcard='.', diagonal=False):
     peer_tups = [(s, sorted(set(flatten(units[s])) - set([s]))) for s in boxes]
     peers = dict(((s, set(peers)) for s, peers in peer_tups))
 
+    symbols = ''.join(sorted(set(symbols)))
+
     if 0:
         val_list = [('rows', row_units),
                     ('cols', col_units),
@@ -120,9 +122,12 @@ def init(side, wildcard='.', diagonal=False):
         puzzle = [c.strip() for c in grid.split(' ') if c.strip()]
         new = []
         for piece in puzzle:
-            if wildcard in piece and len(piece) > 1:
+            length = len(piece)
+            if wildcard in piece and length > 1:
                 new.extend([c for c in piece])
             else:
+                if length > 1:
+                    piece = ''.join(sorted(set(piece)))
                 new.append(piece)
         return new
 
@@ -258,17 +263,13 @@ def init(side, wildcard='.', diagonal=False):
             if isinstance(answer, dict):
                 return answer
 
+    functions = {}
+    fn_type = type(lambda x:0)
+    for name, obj in locals().items():
+        if isinstance(obj, fn_type) and not name.startswith('_'):
+            functions[name] = obj
+    return functions
 
-    return {'display': display,
-            'values_grid': values_grid,
-            'parse_grid': parse_grid,
-            'grid_values': grid_values,
-            'eliminate': eliminate,
-            'only_choice': only_choice,
-            'reduce': reduce,
-            'reduce_puzzle': reduce_puzzle,
-            'search': search,
-    }
 
 functions = init(3)
 globals().update(functions)
