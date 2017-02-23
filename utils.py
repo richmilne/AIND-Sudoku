@@ -164,11 +164,15 @@ def init(side, wildcard='.', diagonal=False):
         Input: A sudoku in dictionary form.
         Output: The resulting sudoku in dictionary form.
         """
+        singles = []
         for unit in unitlist:
-            for digit in '123456789':
-                dplaces = [box for box in unit if digit in values[box]]
-                if len(dplaces) == 1:
-                    values[dplaces[0]] = digit
+            all_vals = set(''.join([values[box] for box in unit]))
+            for digit in all_vals:
+                locations = [box for box in unit if digit in values[box]]
+                if len(locations) == 1:
+                    singles.append((digit, locations[0]))
+        for digit, box in set(singles):
+            values[box] = digit
         return values
 
     return {'display': display,
