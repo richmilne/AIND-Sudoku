@@ -205,6 +205,61 @@ class TestReduce(unittest.TestCase, AttachUtils):
         values = self.reduce_puzzle(values)
         self.assertEqual(values, full_reduce)
 
+    def test_reductio_ad_absurdum(self):
+        self.utils_init(2, diagonal=False)
+
+        input = (r""". . |  .   .
+                     . . |  .   .
+                     ----+-------
+                     . . |234 234
+                     1 . |123 234""")
+
+        check = ['234 1234 234 1234',
+                 '234 1234 234 1234',
+                 '234  234 234  234',
+                 '  .  234   .  234',]
+        check = [[c.strip('.') for c in row.split()] for row in check]
+
+        values = self.reduce(self.grid_values(input))
+        _, _, output = self.values_grid(values)
+        self.assertEqual(output, check)
+
+        values = self.reduce_puzzle(self.grid_values(input))
+        self.assertFalse(values)
+
+
+class TestSearch(unittest.TestCase, AttachUtils):
+    def test_search(self):
+        self.utils_init(3, diagonal=False)
+
+        # Example taken from course notes.
+        input = self.grid_values(r""" 4 . . |. . . |8 . 5
+                                      . 3 . |. . . |. . .
+                                      . . . |7 . . |. . .
+                                      ------+------+------
+                                      . 2 . |. . . |. 6 .
+                                      . . . |. 8 . |4 . .
+                                      . 4 . |. 1 . |. . .
+                                      ------+------+------
+                                      . . . |6 . 3 |. 7 .
+                                      5 . 3 |2 . 1 |. . .
+                                      1 . 4 |. . . |. . .""")
+
+        answer = self.grid_values(r"""4 1 7 |3 6 9 |8 2 5
+                                      6 3 2 |1 5 8 |9 4 7
+                                      9 5 8 |7 2 4 |3 1 6
+                                      ------+------+------
+                                      8 2 5 |4 3 7 |1 6 9
+                                      7 9 1 |5 8 6 |4 3 2
+                                      3 4 6 |9 1 2 |7 5 8
+                                      ------+------+------
+                                      2 8 9 |6 4 3 |5 7 1
+                                      5 7 3 |2 9 1 |6 8 4
+                                      1 6 4 |8 7 5 |2 9 3""")
+
+        values = self.search(input)
+        self.assertEqual(answer, values)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
