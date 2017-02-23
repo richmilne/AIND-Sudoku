@@ -1,17 +1,71 @@
-rows = 'ABCDEFGHI'
-cols = '123456789'
+import os
+import sys
+import string
 
 def cross(a, b):
     return [s+t for s in a for t in b]
 
-boxes = cross(rows, cols)
 
-row_units = [cross(r, cols) for r in rows]
-column_units = [cross(rows, c) for c in cols]
-square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
-unitlist = row_units + column_units + square_units
-units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
-peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
+def init(side, wildcard='.', diagonal=False):
+
+    if not (2 <= side <= 5):
+        raise ValueError("Sorry, can't solve Sudoku puzzles of that size.")
+
+    dim = side * side
+    length = dim * dim
+
+    rows = string.ascii_uppercase
+    cols = '1234567890' + string.lowercase
+    rows, cols = [seq[:dim] for seq in [rows, cols]]
+    symbols = cols
+
+    sub_slices = []
+    for i in xrange(side):
+        base = i*side
+        sub_slices.append(slice(base, base + side))
+
+    row_blocks = [rows[s] for s in sub_slices]
+    col_blocks = [cols[s] for s in sub_slices]
+
+    boxes = cross(rows, cols)
+    row_units = [cross(r, cols) for r in rows]
+    col_units = [cross(rows, c) for c in cols]
+
+    square_units = [cross(rs, cs) for rs in row_blocks
+                                  for cs in col_blocks]
+
+    unitlist = row_units + col_units + square_units
+
+    if diagonal:
+        desc_diag = [''.join(d) for d in zip(rows, cols)]
+        reversed = [rows[i] for i in xrange(len(rows)-1,-1,-1)]
+        asc_diag = [''.join(d) for d in zip(reversed, cols)]
+        diagonals = [desc_diag, asc_diag]
+        unitlist = unitlist + diagonals
+
+    # units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
+    unit_tups = [(s, [u for u in unitlist if s in u]) for s in boxes]
+    units = dict(unit_tups)
+
+    flatten = lambda seq: sum(seq, [])
+    # peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
+    peer_tups = [(s, sorted(set(flatten(units[s])) - set([s]))) for s in boxes]
+    peers = dict(((s, set(peers)) for s, peers in peer_tups))
+
+    if 1:
+        val_list = [('rows', row_units),
+                    ('cols', col_units),
+                    ('blocks', square_units),
+                    ('unit_tups', unit_tups),
+                    ('peer_tups', peer_tups)]
+        if diagonal:
+            val_list.insert(2, ('diagonals', diagonals))
+        for (name, seq) in val_list:
+            print
+            print name
+            for line in seq:
+                print line
+
 
 def display(values):
     """
