@@ -13,6 +13,38 @@ def cross(a, b):
 
 
 def init(side, wildcard='.', diagonal=False, assign_fn=None):
+    """
+    Creates functions used to solve Sudoku puzzles of varying sizes.
+
+    A Sudoku puzzle is a 2-D square grid. We refer to the number of rows/cols
+    as the puzzle's dimension, or *dim*. The Sudoku puzzle is then made up of
+    various units. Each row, and each column, is a unit. So is each of the
+    sub-squares, tiled from the top left corner of the grid to the bottom
+    right. The side length, or *side*, of a sub-square is the square root of
+    the puzzle's dim.
+
+    Each unit consists of a 'dim' number of cells. In some puzzle variations,
+    the 2 main diagonals across the grid are also considered units.
+
+    Input:
+        - side:
+            Size of the sub-square units, which determines the puzzle's
+            `dim`ensions. Currently this function only accepts sides from
+            2 to 5.
+        - wildcard:
+            The character which stands for the unknown contents of a cell in
+            the string representation of a Sudoku puzzle
+        - diagonal:
+            Whether you'd like to include the main diagonals of the puzzle with
+            the other units - leading to the further constraint that each of
+            the puzzle's symbols can only appear once along each diagonal.
+        - assign_fn:
+            Function with signature (dictionary, key, value) used to assign
+            the given value to the dictionary under the specified key. Used by
+            the visualisation module.
+    Output:
+        A dictionary of all the function closures produced by this function.
+    """
 
     if not (2 <= side <= 5):
         raise ValueError("Sorry, can't solve Sudoku puzzles of that size.")
@@ -56,9 +88,9 @@ def init(side, wildcard='.', diagonal=False, assign_fn=None):
     unit_tups = [(s, [u for u in unitlist if s in u]) for s in boxes]
     units = dict(unit_tups)
 
-    flatten = lambda seq: sum(seq, [])
+    _flatten = lambda seq: sum(seq, [])
     # peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
-    peer_tups = [(s, sorted(set(flatten(units[s])) - set([s]))) for s in boxes]
+    peer_tups = [(s, sorted(set(_flatten(units[s])) - set([s]))) for s in boxes]
     peers = dict(((s, set(peers)) for s, peers in peer_tups))
 
     symbols = ''.join(sorted(set(symbols)))
@@ -197,12 +229,7 @@ def init(side, wildcard='.', diagonal=False, assign_fn=None):
         """Generalisation of the naked twins strategy.
 
         If a unit contains n identical cells, with each containing n options,
-        those options can't occur anywhere else in that unit.
-
-        To help understand, here's a naked twins example: If two cells each
-        contain the two options 2 and 3 - one of those cells must contain the
-        2, and the other the 3; no other cell in that unit can. Therefore we
-        can eliminate those values from the other cells!"""
+        eliminate those options from all the other cells in that unit."""
         if num_siblings is not None:
             assert 2 <= num_siblings <= (dim-1)
 
@@ -233,13 +260,25 @@ def init(side, wildcard='.', diagonal=False, assign_fn=None):
 
     def naked_twins(values):
         """Eliminate values using the naked twins strategy.
+
+        'Naked twins' are two cells in a unit which both contain the same two
+        values. These two values can't appear in any other cells, so remove
+        them from all other cells.
+
+        Here's an example: If two cells each contain the two options 2 and 3 -
+        one of those cells must contain the 2, and the other the 3; no other
+        cell in that unit can. Therefore we can eliminate those values from the
+        other cells!
+
         Args:
-            values(dict): a dictionary of the form {'box_name': '123456789', ...}
+            values:
+                The dictionary representation of a Sudoku puzzle
+                ({'box-co-ords': symbol-string, ...}
 
         Returns:
             the values dictionary with the naked twins eliminated from peers.
         """
-    
+
         # Find all instances of naked twins
         # Eliminate the naked twins as possibilities for their peers
         return naked_siblings(values, 2)
@@ -329,9 +368,6 @@ def init(side, wildcard='.', diagonal=False, assign_fn=None):
             functions[name] = obj
     return functions
 
-
 functions = init(3, diagonal=True)
 globals().update(functions)
 __all__ = list(functions.keys())
-
-
