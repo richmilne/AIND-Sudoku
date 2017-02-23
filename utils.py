@@ -157,11 +157,26 @@ def init(side, wildcard='.', diagonal=False):
                 values[peer] = values[peer].replace(digit, '')
         return values
 
+    def only_choice(values):
+        """
+        Go through all the units, and whenever there is a unit with a value that
+        only fits in one box, assign the value to this box.
+        Input: A sudoku in dictionary form.
+        Output: The resulting sudoku in dictionary form.
+        """
+        for unit in unitlist:
+            for digit in '123456789':
+                dplaces = [box for box in unit if digit in values[box]]
+                if len(dplaces) == 1:
+                    values[dplaces[0]] = digit
+        return values
+
     return {'display': display,
             'values_grid': values_grid,
             'parse_grid': parse_grid,
             'grid_values': grid_values,
             'eliminate': eliminate,
+            'only_choice': only_choice,
     }
 
 functions = init(3)

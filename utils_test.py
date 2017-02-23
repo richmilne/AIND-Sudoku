@@ -1,12 +1,14 @@
 import utils
 import unittest
 
+
 class AttachUtils(object):
     @classmethod
     def utils_init(cls, side, wildcard='.', diagonal=False):
         functions = utils.init(side, wildcard, diagonal)
         for name, fn in functions.items():
             setattr(cls, name, staticmethod(fn))
+
 
 class TestGridParsing(unittest.TestCase, AttachUtils):
 
@@ -52,10 +54,10 @@ class TestGridParsing(unittest.TestCase, AttachUtils):
         self.assertEqual(check, output)
         self.assertEqual(separator, '----------+----------')
 
+
 class TestElimination(unittest.TestCase, AttachUtils):
 
     grid = '2.............1.'
-
 
     def test_elimination(self):
         self.utils_init(2, diagonal=False)
@@ -86,6 +88,57 @@ class TestElimination(unittest.TestCase, AttachUtils):
         separator, width, output = self.values_grid(values)
 
         self.assertEqual(output, check)
+
+
+class TestOnlyChoice(unittest.TestCase, AttachUtils):
+
+    grid = '23 234 .. 34 13 .. .. 123 . ....'
+
+    check = ['  23  234 1234 1234 ',
+             '  34    1 1234 1234 ',
+             '1234 1234  123 1234',
+             '1234 1234 1234 1234',]
+    check = [c.split() for c in check]
+    check_diag = [c[:] for c in check]
+    check_diag[-1][-1] = '4'
+
+    def test_only_choice(self):
+        self.utils_init(2, diagonal=False)
+
+        values = self.grid_values(self.grid)
+        values = self.only_choice(values)
+        separator, width, output = self.values_grid(values)
+
+        self.assertEqual(output, self.check)
+
+    def test_only_choice_diagonal(self):
+        self.utils_init(2, diagonal=True)
+
+        values = self.grid_values(self.grid)
+        values = self.only_choice(values)
+        separator, width, output = self.values_grid(values)
+
+        self.assertEqual(output, self.check_diag)
+
+    def test_only_choice_hexa(self):
+        side = 4
+        dim = side * side
+        self.utils_init(side, diagonal=False)
+
+        grid = '.'*(dim**2)
+        values = self.grid_values(grid)
+        _, _, puzzle = self.values_grid(values)
+        symbols = puzzle[0][0]
+        cut, last = symbols[:-1], symbols[-1]
+        puzzle[0]  = ([cut] * (dim-1)) + [symbols]
+
+        grid = ' '.join(sum(puzzle, []))
+
+        values = self.eliminate(self.grid_values(grid))
+        _, _, puzzle = self.values_grid(values)
+
+        self.assertEqual(puzzle[0][-1], last)
+        print puzzle[0][-1]
 
 
 if __name__ == '__main__':
