@@ -232,6 +232,33 @@ def init(side, wildcard='.', diagonal=False):
 
         return values
 
+    def search(values):
+        """Solve a Sudoku puzzle by using depth-first search and propogation."""
+
+        # First, reduce the puzzle using the previous function
+        values = reduce_puzzle(values)
+        if not isinstance(values, dict):
+            return
+
+        count = [(len(vals), box, vals) for box, vals in values.items()]
+        count = sorted(count)
+        count = [tup for tup in count if tup[0] > 1]
+        if not count:
+            # Problem must already be solved
+            return values
+
+        # Choose one of the unfilled squares with the fewest possibilities
+        _, box, vals = count.pop(0)
+        for digit in vals:
+            # Now use recursion to solve each one of the resulting sudokus,
+            # and if one returns a value (not False), return that answer!
+            new_values = values.copy()
+            new_values[box] = digit
+            answer = search(new_values)
+            if isinstance(answer, dict):
+                return answer
+
+
     return {'display': display,
             'values_grid': values_grid,
             'parse_grid': parse_grid,
@@ -240,6 +267,7 @@ def init(side, wildcard='.', diagonal=False):
             'only_choice': only_choice,
             'reduce': reduce,
             'reduce_puzzle': reduce_puzzle,
+            'search': search,
     }
 
 functions = init(3)
