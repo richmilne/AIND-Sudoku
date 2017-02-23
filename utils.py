@@ -196,14 +196,40 @@ def init(side, wildcard='.', diagonal=False):
         Input: A sudoku in dictionary form.
         Output: The resulting sudoku in dictionary form.
         """
+        # The original definition of 'remains the same' doesn't quite work.
+        # It was just a count of how many cells had been reduced to 1 char.
+        # But what about reductions that reduce the possibilities in other
+        # cells, such that the next iteration would reduce them? And whether
+        # this happens or not also depends on the order the reductions are
+        # performed; if you do only_choice, then eliminate, you might be able
+        # to have another round, whereas if you do eliminate first, then
+        # only_choice, this won't happen.
+
+        # To make the order of reductions irrelevant, we'll expand the original
+        # definition of 'remains the same'. If the reductions seem to have
+        # stalled (no more cells reduced to one) do one more set of reductions,
+        # and only exit if that results in no change.
+
         stalled = False
-        while not stalled:
+        stalled_flag = False
+        while True:
             solved_before = len(_boxes_with_val_len(values, 1))
             values = reduce(values)
-            solved_after = len(_boxes_with_val_len(values, 1))
-            stalled = solved_before == solved_after
             if len(_boxes_with_val_len(values, 0)):
                 return False
+            solved_after = len(_boxes_with_val_len(values, 1))
+
+            stalled = solved_before == solved_after
+            # print 'Stalled flags:', (stalled, stalled_flag)
+            # print 'Values before/after: %d/%d' % (solved_before, solved_after)
+            if stalled:
+                if stalled_flag:
+                    break
+                else:
+                    stalled_flag = True
+            else:
+                stalled_flag = False
+
         return values
 
     return {'display': display,
