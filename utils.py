@@ -246,6 +246,7 @@ def init(side, wildcard='.', diagonal=False, assign_fn=None):
 
     def reduce(values):
         """One round of each of the reduction functions."""
+        values = naked_siblings(values)
         values = only_choice(values)
         values = eliminate(values)
         return values
