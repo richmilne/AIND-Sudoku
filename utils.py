@@ -74,6 +74,23 @@ def init(side, wildcard='.', diagonal=False):
             for line in seq:
                 print line
 
+    def values_grid(values):
+        """
+        Convert the dict of Sudoku values into 2-D list.
+
+        Input: Sudoku puzzle in dictionary form
+        Output:
+            - The formattted separator line, to go between each row of squares.
+            - The cell padding amount, based on width of longest cell.
+            - A list of all the rows in the puzzle, each row being a list of
+              all the cells in that row.
+        """
+        output = []
+        width = 1 + max(len(v) for v in values.values())
+        line = '+'.join(['-'*(width*side)]*side)
+        for r in rows:
+            output.append([values[r+c] for c in cols])
+        return line, width, output
 
     def display(values):
         """
@@ -83,15 +100,15 @@ def init(side, wildcard='.', diagonal=False):
         """
         add_sep = lambda idx: 0 < idx < (dim-1) and (idx % side) == (side-1)
 
-        width = 1 + max(len(v) for v in values.values())
-        line = '+'.join(['-'*(width*side)]*side)
-        for r, row in enumerate(rows):
-            disp = [values[row+col].center(width)+('|' if add_sep(c) else '')
-                    for c, col in enumerate(cols)]
-            print(''.join(disp))
-            if add_sep(r): print(line)
+        separator, width, padded = values_grid(values)
+        for r, row in enumerate(padded):
+            disp = [col.center(width) + ('|' if add_sep(c) else '')
+                    for c, col in enumerate(row)]
+            print ''.join(disp)
+            if add_sep(r):
+                print(separator)
         print
-    
+
     def parse_grid(grid, wildcard=wildcard):
         """Parse the string representation of a Sudoku grid.
 
@@ -121,12 +138,17 @@ def init(side, wildcard='.', diagonal=False):
         """
         puzzle = parse_grid(grid, wildcard)
         if len(puzzle) != length:
-            msg = 'Input grid must be a string of length %d (%dx%d)'
+            msg = 'Input grid must be a string of %d cells (%dx%d)'
             raise AssertionError(msg % (length, dim, dim))
         puzzle = [symbols if c==wildcard else c for c in puzzle]
         return dict(zip(boxes, puzzle))
     grid_values.__doc__ %= locals()
 
-    return display, parse_grid, grid_values
+    return {'display': display,
+            'values_grid': values_grid,
+            'parse_grid': parse_grid,
+            'grid_values': grid_values}
 
-display, parse_grid, grid_values = init(3)
+functions = init(3)
+globals().update(functions)
+__all__ = functions.keys()
