@@ -1,3 +1,5 @@
+import utils
+
 assignments = []
 
 def assign_value(values, box, value):
@@ -10,53 +12,9 @@ def assign_value(values, box, value):
         assignments.append(values.copy())
     return values
 
-def naked_twins(values):
-    """Eliminate values using the naked twins strategy.
-    Args:
-        values(dict): a dictionary of the form {'box_name': '123456789', ...}
+fn_dict = utils.init(3, diagonal=True, assign_fn=assign_value)
+globals().update(fn_dict)
 
-    Returns:
-        the values dictionary with the naked twins eliminated from peers.
-    """
-
-    # Find all instances of naked twins
-    # Eliminate the naked twins as possibilities for their peers
-
-def cross(A, B):
-    "Cross product of elements in A and elements in B."
-    pass
-
-def grid_values(grid):
-    """
-    Convert grid into a dict of {square: char} with '123456789' for empties.
-    Args:
-        grid(string) - A grid in string form.
-    Returns:
-        A grid in dictionary form
-            Keys: The boxes, e.g., 'A1'
-            Values: The value in each box, e.g., '8'. If the box has no value, then the value will be '123456789'.
-    """
-    pass
-
-def display(values):
-    """
-    Display the values as a 2-D grid.
-    Args:
-        values(dict): The sudoku in dictionary form
-    """
-    pass
-
-def eliminate(values):
-    pass
-
-def only_choice(values):
-    pass
-
-def reduce_puzzle(values):
-    pass
-
-def search(values):
-    pass
 
 def solve(grid):
     """
@@ -67,6 +25,8 @@ def solve(grid):
     Returns:
         The dictionary representation of the final sudoku grid. False if no solution exists.
     """
+    values = search(grid_values(grid))
+    return values
 
 if __name__ == '__main__':
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'

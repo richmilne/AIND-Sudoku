@@ -6,12 +6,13 @@ import string
 ws = '\n\r\t |+-'
 re_ws = re.compile(r"""(\n|\r|\t| |\||\+|-)""")
 
+fn_type = type(lambda x:0)
 
 def cross(a, b):
     return [s+t for s in a for t in b]
 
 
-def init(side, wildcard='.', diagonal=False):
+def init(side, wildcard='.', diagonal=False, assign_fn=None):
 
     if not (2 <= side <= 5):
         raise ValueError("Sorry, can't solve Sudoku puzzles of that size.")
@@ -75,6 +76,13 @@ def init(side, wildcard='.', diagonal=False):
             print(name)
             for line in seq:
                 print(line)
+
+    if assign_fn is None:
+        def assign_fn(values, box, value):
+            values[box] = value
+    else:
+        assert isinstance(assign_fn, fn_type)
+
 
     def values_grid(values):
         """
@@ -164,7 +172,7 @@ def init(side, wildcard='.', diagonal=False):
         solved = _boxes_with_val_len(values, 1)
         for box, digit in solved:
             for peer in peers[box]:
-                values[peer] = values[peer].replace(digit, '')
+                assign_fn(values, peer, values[peer].replace(digit, ''))
         return values
 
     def only_choice(values):
@@ -182,7 +190,7 @@ def init(side, wildcard='.', diagonal=False):
                 if len(locations) == 1:
                     singles.append((digit, locations[0]))
         for digit, box in set(singles):
-            values[box] = digit
+            assign_fn(values, box, digit)
         return values
 
     def naked_siblings(values, num_siblings=None):
@@ -219,7 +227,7 @@ def init(side, wildcard='.', diagonal=False):
                     for box, old_value in unit_values:
                         if box in boxes: continue
                         value = ''.join(sorted(set(old_value) - digits))
-                        values[box] = ''.join(sorted(value))
+                        assign_fn(values, box, ''.join(sorted(value)))
 
         return values
 
@@ -315,7 +323,6 @@ def init(side, wildcard='.', diagonal=False):
                 return answer
 
     functions = {}
-    fn_type = type(lambda x:0)
     for name, obj in locals().items():
         if isinstance(obj, fn_type) and not name.startswith('_'):
             functions[name] = obj
