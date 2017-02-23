@@ -134,11 +134,76 @@ class TestOnlyChoice(unittest.TestCase, AttachUtils):
 
         grid = ' '.join(sum(puzzle, []))
 
-        values = self.eliminate(self.grid_values(grid))
+        values = self.only_choice(self.grid_values(grid))
         _, _, puzzle = self.values_grid(values)
 
         self.assertEqual(puzzle[0][-1], last)
-        print puzzle[0][-1]
+
+class TestReduce(unittest.TestCase, AttachUtils):
+
+    grid = '23 234 .. 34 13 .. .. 123 . ....'
+
+    def test_reduce(self):
+        self.utils_init(2, diagonal=False)
+
+        check = ['  23 234 1234 1234 ',
+                 '  34   1  234  234 ',
+                 '1234 234  123 1234',
+                 '1234 234 1234 1234',]
+        check = [c.split() for c in check]
+
+        values = self.grid_values(self.grid)
+        values = self.reduce(values)
+        separator, width, output = self.values_grid(values)
+
+        self.assertEqual(output, check)
+
+    def test_reduce_diagonal(self):
+        self.utils_init(2, diagonal=True)
+
+        check = ['  23 234 1234 123',
+                 '  34   1  234  23',
+                 '1234 234   23 123',
+                 ' 123  23 123    4',]
+        check = [c.split() for c in check]
+
+        values = self.grid_values(self.grid)
+        values = self.reduce(values)
+        separator, width, output = self.values_grid(values)
+
+        self.assertEqual(output, check)
+
+    def test_reduce_puzzle(self):
+        self.utils_init(2, diagonal=True)
+
+        grid = r""" 1234 1234| 1234 1234
+                    1234  1  | 1234 1234
+                   ----------+----------
+                    1234 1234| 1234 234
+                    1234 1234| 1234  4"""
+
+        # Note that one iteration of the reduction function does eliminate
+        # some possibilities - but does not chenge the number of cells which
+        # only contain one character.
+        one_reduce = self.grid_values(r"""  23  234 | 1234 123
+                                           234   1  | 234   23
+                                          ----------+----------
+                                           1234 234 |  23   23
+                                           123   23 | 123   4""")
+        values = self.grid_values(grid)
+        values = self.reduce(values)
+        self.assertEqual(values, one_reduce)
+
+        # The full reduction function, however, will iterate through reductions
+        # until it's not capable of doing any more
+        full_reduce = self.grid_values(r""" 23 23| 4  1
+                                            4  1 | 23 23
+                                           ------+------
+                                            1  4 | 23 23
+                                            23 23| 1  4""")
+        values = self.grid_values(grid)
+        values = self.reduce_puzzle(values)
+        self.assertEqual(values, full_reduce)
 
 
 if __name__ == '__main__':

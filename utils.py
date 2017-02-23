@@ -144,6 +144,11 @@ def init(side, wildcard='.', diagonal=False):
         return dict(zip(boxes, puzzle))
     grid_values.__doc__ %= locals()
 
+    def _boxes_with_val_len(values, length):
+        boxes = [(box, val) for box, val in values.items()
+                 if len(val) == length]
+        return boxes
+
     def eliminate(values):
         """
         Go through all the boxes, and whenever there is a box with a value,
@@ -151,7 +156,7 @@ def init(side, wildcard='.', diagonal=False):
         Input: A sudoku in dictionary form.
         Output: The resulting sudoku in dictionary form.
         """
-        solved = [(s, vals) for s, vals in values.items() if len(vals) == 1]
+        solved = _boxes_with_val_len(values, 1)
         for box, digit in solved:
             for peer in peers[box]:
                 values[peer] = values[peer].replace(digit, '')
@@ -175,6 +180,12 @@ def init(side, wildcard='.', diagonal=False):
             values[box] = digit
         return values
 
+    def reduce(values):
+        """One round of each of the reduction functions."""
+        values = only_choice(values)
+        values = eliminate(values)
+        return values
+
     def reduce_puzzle(values):
         """
         Iterate eliminate() and only_choice(). If at some point, there is a box
@@ -185,15 +196,13 @@ def init(side, wildcard='.', diagonal=False):
         Input: A sudoku in dictionary form.
         Output: The resulting sudoku in dictionary form.
         """
-        solved_values = [box for box in values.keys() if len(values[box]) == 1]
         stalled = False
         while not stalled:
-            solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
-            values = eliminate(values)
-            values = only_choice(values)
-            solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
-            stalled = solved_values_before == solved_values_after
-            if len([box for box in values.keys() if len(values[box]) == 0]):
+            solved_before = len(_boxes_with_val_len(values, 1))
+            values = reduce(values)
+            solved_after = len(_boxes_with_val_len(values, 1))
+            stalled = solved_before == solved_after
+            if len(_boxes_with_val_len(values, 0)):
                 return False
         return values
 
@@ -203,6 +212,7 @@ def init(side, wildcard='.', diagonal=False):
             'grid_values': grid_values,
             'eliminate': eliminate,
             'only_choice': only_choice,
+            'reduce': reduce,
             'reduce_puzzle': reduce_puzzle,
     }
 
